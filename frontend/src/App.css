@@ -1,0 +1,573 @@
+/* ═══════════════════════════════════════
+   STORYBOARD V3 — Every Coffee Explained
+   ═══════════════════════════════════════ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: #F7F8FA;
+  color: #1A202C;
+  line-height: 1.5;
+}
+
+/* ── App Layout ── */
+
+.app { min-height: 100vh; }
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #1A365D;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.app-title {
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-icon { font-size: 22px; }
+
+.title-badge {
+  font-size: 10px;
+  background: #E53E3E;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 2px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.mode-toggle button {
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.mode-toggle button.active {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+/* ── Item Navigation ── */
+
+.item-nav {
+  display: flex;
+  gap: 2px;
+  padding: 8px 24px;
+  background: #2D3748;
+  overflow-x: auto;
+}
+
+.item-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.item-tab:hover:not(.disabled) { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
+.item-tab.active { background: rgba(255,255,255,0.15); color: white; }
+.item-tab.disabled { opacity: 0.35; cursor: not-allowed; }
+
+.tab-number { font-weight: 700; font-size: 11px; opacity: 0.6; }
+.tab-name { font-weight: 500; }
+.tab-lock { font-size: 10px; }
+
+/* ── Storyboard Main ── */
+
+.storyboard-main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+/* ── Item Header ── */
+
+.item-header { margin-bottom: 20px; }
+
+.item-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.badge-icon { font-size: 18px; }
+
+.item-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #718096;
+  margin-bottom: 4px;
+}
+
+.item-stats span::before { content: '\00B7'; margin-right: 6px; color: #CBD5E0; }
+.item-stats span:first-child::before { content: ''; margin: 0; }
+
+.item-role { font-size: 13px; color: #4A5568; font-style: italic; }
+
+/* ── Play Controls ── */
+
+.play-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.btn-play, .btn-stop {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.btn-play { background: #1A365D; color: white; }
+.btn-play:hover { background: #2C5282; }
+.btn-stop { background: #E53E3E; color: white; }
+
+.timeline-bar {
+  flex: 1;
+  display: flex;
+  height: 32px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #EDF2F7;
+}
+
+.timeline-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-right: 1px solid rgba(255,255,255,0.3);
+  background: #E2E8F0;
+  position: relative;
+}
+
+.timeline-segment:hover { background: #CBD5E0; }
+.timeline-segment.active { background: #1A365D; color: white; }
+.timeline-segment.playing { background: #2B6CB0; color: white; }
+
+@keyframes playingPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.timeline-segment.playing { animation: playingPulse 1s ease-in-out infinite; }
+
+.timeline-label { font-size: 11px; font-weight: 700; }
+
+/* ── Timeline Mode ── */
+
+.beats-timeline { display: flex; flex-direction: column; gap: 20px; }
+
+.beat-row-timeline {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.beat-svg-container {
+  position: relative;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.beat-svg-container svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.btn-play-beat {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(26, 54, 93, 0.85);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  backdrop-filter: blur(4px);
+}
+
+.btn-play-beat:hover { background: rgba(26, 54, 93, 1); transform: scale(1.1); }
+
+/* ── Presentation Mode ── */
+
+.beats-presentation {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.presentation-svg {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 80px;
+}
+
+.presentation-svg svg { width: 100%; display: block; }
+
+.presentation-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #F7FAFC;
+  border-top: 1px solid #EDF2F7;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4A5568;
+}
+
+.presentation-nav button {
+  padding: 6px 14px;
+  border: 1px solid #E2E8F0;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+
+.presentation-nav button:hover:not(:disabled) { background: #EDF2F7; }
+.presentation-nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.presentation-card { max-height: calc(100vh - 160px); overflow-y: auto; }
+
+.btn-play-single {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background: #1A365D;
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.15s;
+}
+
+.btn-play-single:hover { background: #2C5282; }
+
+/* ── Beat Card ── */
+
+.beat-card {
+  background: white;
+  border-radius: 10px;
+  border-left: 4px solid #CBD5E0;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: all 0.2s;
+}
+
+.beat-card.active { box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+
+.beat-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.beat-number {
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.beat-type { font-size: 13px; font-weight: 600; color: #2D3748; flex: 1; }
+
+.beat-duration {
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  background: #EDF2F7;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.beat-narration {
+  font-style: italic;
+  font-size: 13px;
+  color: #4A5568;
+  border-left: 3px solid #E2E8F0;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  background: #FAFBFC;
+  border-radius: 0 6px 6px 0;
+  line-height: 1.6;
+}
+
+.micro-beat-highlight {
+  background: #FFF5F5;
+  border: 1px solid #FED7D7;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #E53E3E;
+  margin-bottom: 12px;
+}
+
+.beat-section { margin-bottom: 10px; }
+
+.beat-label {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #A0AEC0;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.beat-section p { font-size: 12px; color: #4A5568; }
+
+.beat-row { display: flex; gap: 12px; }
+.beat-section-half { flex: 1; }
+
+.asset-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.asset-list li {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  font-size: 12px;
+}
+
+.asset-type {
+  font-weight: 600;
+  color: #2D3748;
+  white-space: nowrap;
+  font-size: 11px;
+  background: #EDF2F7;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.asset-desc { color: #4A5568; flex: 1; }
+.asset-meta { font-size: 10px; color: #A0AEC0; white-space: nowrap; }
+
+.beat-notes {
+  background: #FFFFF0;
+  border: 1px solid #FEFCBF;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-top: 8px;
+}
+
+.beat-notes p { font-size: 12px; color: #744210; }
+
+/* ── Placeholder ── */
+
+.placeholder {
+  text-align: center;
+  padding: 60px;
+  color: #A0AEC0;
+}
+
+.placeholder code {
+  display: block;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #2D3748;
+  color: #68D391;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* ══════════════════════════════════════
+   V3 ANIMATIONS — SVG Keyframes
+   ══════════════════════════════════════ */
+
+/* All animated SVG elements start hidden */
+.beat-svg .anim-cutout,
+.beat-svg .anim-name,
+.beat-svg .anim-img1, .beat-svg .anim-img2, .beat-svg .anim-img3,
+.beat-svg .anim-x1, .beat-svg .anim-x2, .beat-svg .anim-check,
+.beat-svg .anim-photo, .beat-svg .anim-data, .beat-svg .anim-slam, .beat-svg .anim-analogy,
+.beat-svg .anim-crema1, .beat-svg .anim-crema2, .beat-svg .anim-crema3,
+.beat-svg .anim-label1, .beat-svg .anim-label2, .beat-svg .anim-label3,
+.beat-svg .anim-historic, .beat-svg .anim-silhouette, .beat-svg .anim-punchline,
+.beat-svg .anim-drink1, .beat-svg .anim-drink2, .beat-svg .anim-drink3, .beat-svg .anim-drink4,
+.beat-svg .anim-closer {
+  opacity: 0;
+}
+
+/* When NOT playing, show everything statically */
+.beat-svg:not(.playing) .anim-cutout,
+.beat-svg:not(.playing) .anim-name,
+.beat-svg:not(.playing) .anim-img1, .beat-svg:not(.playing) .anim-img2, .beat-svg:not(.playing) .anim-img3,
+.beat-svg:not(.playing) .anim-x1, .beat-svg:not(.playing) .anim-x2, .beat-svg:not(.playing) .anim-check,
+.beat-svg:not(.playing) .anim-photo, .beat-svg:not(.playing) .anim-data,
+.beat-svg:not(.playing) .anim-slam, .beat-svg:not(.playing) .anim-analogy,
+.beat-svg:not(.playing) .anim-crema1, .beat-svg:not(.playing) .anim-crema2, .beat-svg:not(.playing) .anim-crema3,
+.beat-svg:not(.playing) .anim-label1, .beat-svg:not(.playing) .anim-label2, .beat-svg:not(.playing) .anim-label3,
+.beat-svg:not(.playing) .anim-historic, .beat-svg:not(.playing) .anim-silhouette, .beat-svg:not(.playing) .anim-punchline,
+.beat-svg:not(.playing) .anim-drink1, .beat-svg:not(.playing) .anim-drink2, .beat-svg:not(.playing) .anim-drink3, .beat-svg:not(.playing) .anim-drink4,
+.beat-svg:not(.playing) .anim-closer {
+  opacity: 1;
+}
+
+/* ── Keyframes ── */
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0); }
+  70% { transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slamData {
+  0% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1.25); }
+  75% { transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes quickFlash {
+  0% { opacity: 0; transform: scale(0.92); }
+  15% { opacity: 1; transform: scale(1); }
+  85% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; }
+}
+
+@keyframes stampX {
+  0% { opacity: 0; transform: scale(2) rotate(-15deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* ── Beat 1: Title Card ── */
+.beat-svg.playing .anim-cutout {
+  animation: scaleIn 0.6s ease-out forwards;
+}
+.beat-svg.playing .anim-name {
+  animation: scaleIn 0.4s ease-out 0.4s forwards;
+}
+
+/* ── Beat 2: Misconception ── */
+.beat-svg.playing .anim-img1 { animation: scaleIn 0.3s ease-out 0s forwards; }
+.beat-svg.playing .anim-x1   { animation: stampX 0.2s ease-out 0.6s forwards; }
+.beat-svg.playing .anim-img2 { animation: scaleIn 0.3s ease-out 1.0s forwards; }
+.beat-svg.playing .anim-x2   { animation: stampX 0.2s ease-out 1.6s forwards; }
+.beat-svg.playing .anim-img3 { animation: scaleIn 0.3s ease-out 2.0s forwards; }
+.beat-svg.playing .anim-check { animation: popIn 0.3s ease-out 2.6s forwards; }
+
+/* ── Beat 3: Pressure Data ── */
+.beat-svg.playing .anim-photo   { animation: scaleIn 0.4s ease-out 0s forwards; }
+.beat-svg.playing .anim-data    { animation: scaleIn 0.4s ease-out 1.5s forwards; }
+.beat-svg.playing .anim-slam    { animation: slamData 0.4s cubic-bezier(0.34,1.56,0.64,1) 2.5s forwards; }
+.beat-svg.playing .anim-analogy { animation: slideUp 0.5s ease-out 3.5s forwards; }
+
+/* ── Beat 4: Crema Comparison ── */
+.beat-svg.playing .anim-crema1 { animation: scaleIn 0.3s ease-out 0s forwards; }
+.beat-svg.playing .anim-crema2 { animation: scaleIn 0.3s ease-out 0.4s forwards; }
+.beat-svg.playing .anim-crema3 { animation: scaleIn 0.3s ease-out 0.8s forwards; }
+.beat-svg.playing .anim-label1 { animation: popIn 0.2s ease-out 1.3s forwards; }
+.beat-svg.playing .anim-label2 { animation: popIn 0.2s ease-out 1.6s forwards; }
+.beat-svg.playing .anim-label3 { animation: popIn 0.2s ease-out 1.9s forwards; }
+
+/* ── Beat 5: Historic / Micro-beat ── */
+.beat-svg.playing .anim-historic   { animation: scaleIn 0.4s ease-out 0s forwards; }
+.beat-svg.playing .anim-silhouette { animation: slideInLeft 0.5s ease-out 1.5s forwards; }
+.beat-svg.playing .anim-punchline  { animation: fadeIn 0.8s ease-in 4s forwards; }
+
+/* ── Beat 6: Closer Montage ── */
+.beat-svg.playing .anim-drink1 { animation: quickFlash 1.5s ease-out 0s forwards; }
+.beat-svg.playing .anim-drink2 { animation: quickFlash 1.5s ease-out 1.5s forwards; }
+.beat-svg.playing .anim-drink3 { animation: quickFlash 1.5s ease-out 3s forwards; }
+.beat-svg.playing .anim-drink4 { animation: quickFlash 1.5s ease-out 4.5s forwards; }
+.beat-svg.playing .anim-closer { animation: fadeIn 0.5s ease-in 6s forwards; }
+
+/* ── Responsive ── */
+
+@media (max-width: 900px) {
+  .beat-row-timeline { grid-template-columns: 1fr; }
+  .beats-presentation { grid-template-columns: 1fr; }
+  .presentation-svg { position: static; }
+  .app-header { flex-direction: column; gap: 8px; }
+}
