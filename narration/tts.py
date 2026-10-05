@@ -17,6 +17,10 @@ import urllib.request
 API_URL = "https://api.fish.audio/v1/tts"
 
 
+class TTSError(Exception):
+    pass
+
+
 def synthesize(text, voice_id, api_key, model="s2-pro", bitrate=192):
     body = {
         "text": text,
@@ -40,9 +44,9 @@ def synthesize(text, voice_id, api_key, model="s2-pro", bitrate=192):
             return resp.read()
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", errors="replace")
-        sys.exit(f"Erro da API Fish Audio ({e.code}): {detail}")
+        raise TTSError(f"Erro da API Fish Audio ({e.code}): {detail}")
     except urllib.error.URLError as e:
-        sys.exit(f"Não foi possível conectar ao Fish Audio: {e.reason}")
+        raise TTSError(f"Não foi possível conectar ao Fish Audio: {e.reason}")
 
 
 def main():
@@ -66,7 +70,10 @@ def main():
     if not text:
         sys.exit("O roteiro está vazio.")
 
-    audio = synthesize(text, args.voice, api_key, model=args.model)
+    try:
+        audio = synthesize(text, args.voice, api_key, model=args.model)
+    except TTSError as e:
+        sys.exit(str(e))
     with open(args.out, "wb") as f:
         f.write(audio)
     print(f"Narração salva em {args.out} ({len(audio) / 1024:.0f} KB)")

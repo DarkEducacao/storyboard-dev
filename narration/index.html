@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gerador de Narração</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --card: #ffffff; --text: #1d1d1f; --muted: #6b6b70;
+    --border: #e2e0db; --accent: #1a365d; --accent-text: #ffffff; --error: #b42318;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141416; --card: #1e1e21; --text: #ececee; --muted: #9a9aa2;
+      --border: #313136; --accent: #7aa2e3; --accent-text: #0e1420; --error: #f97066;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; display: grid; gap: 16px;
+  }
+  label { display: grid; gap: 6px; font-weight: 600; font-size: .9rem; }
+  input, textarea, select {
+    width: 100%; font: inherit; font-weight: 400; color: var(--text); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
+  }
+  textarea { min-height: 280px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+  .meta { color: var(--muted); font-size: .85rem; font-weight: 400; }
+  button {
+    font: inherit; font-weight: 600; border: 0; border-radius: 8px;
+    padding: 12px 18px; background: var(--accent); color: var(--accent-text); cursor: pointer;
+  }
+  button:disabled { opacity: .55; cursor: wait; }
+  .error { color: var(--error); margin: 0; }
+  .result { display: none; gap: 12px; }
+  .result.show { display: grid; }
+  audio { width: 100%; }
+  a.download {
+    justify-self: start; text-decoration: none; font-weight: 600;
+    padding: 10px 16px; border-radius: 8px; border: 1px solid var(--accent); color: var(--accent);
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Gerador de Narração</h1>
+  <p class="sub">Cole o roteiro, gere a voz com Fish Audio e baixe o .mp3.</p>
+
+  <form class="card" id="form">
+    <label>
+      Roteiro
+      <textarea id="text" placeholder="Cole aqui o texto da narração..."></textarea>
+      <span class="meta" id="count">0 caracteres</span>
+    </label>
+
+    <div class="row">
+      <label>
+        ID da voz (Fish Audio)
+        <input id="voice" placeholder="ex.: 802e3bc2b27e49c2995d23ef70e6ac89" autocomplete="off">
+      </label>
+      <label>
+        Modelo
+        <select id="model">
+          <option value="s2-pro">S2 Pro</option>
+          <option value="s1">S1</option>
+        </select>
+      </label>
+    </div>
+
+    <label>
+      Nome do arquivo
+      <input id="filename" value="narracao">
+    </label>
+
+    <button type="submit" id="go">Gerar narração</button>
+    <p class="error" id="error"></p>
+
+    <div class="result" id="result">
+      <audio id="player" controls></audio>
+      <a class="download" id="download">⬇ Baixar .mp3</a>
+    </div>
+  </form>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const PRICE_PER_CHAR = 15 / 1_000_000; // US$15 por 1M caracteres
+  let lastUrl = null;
+
+  function store(key, value) { try { localStorage.setItem(key, value); } catch {} }
+  function recall(key) { try { return localStorage.getItem(key); } catch { return null; } }
+
+  $('voice').value = recall('narration.voice') || '';
+  $('model').value = recall('narration.model') || 's2-pro';
+
+  function updateCount() {
+    const n = $('text').value.trim().length;
+    const minutes = $('text').value.trim().split(/\s+/).filter(Boolean).length / 150;
+    $('count').textContent =
+      `${n.toLocaleString('pt-BR')} caracteres · ~${minutes.toFixed(1)} min de áudio · custo estimado US$ ${(n * PRICE_PER_CHAR).toFixed(3)}`;
+  }
+  $('text').addEventListener('input', updateCount);
+  updateCount();
+
+  $('form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('error').textContent = '';
+    const text = $('text').value.trim();
+    const voice = $('voice').value.trim();
+    const model = $('model').value;
+    if (!text) { $('error').textContent = 'Cole um roteiro antes de gerar.'; return; }
+    if (!voice) { $('error').textContent = 'Informe o ID da voz.'; return; }
+    store('narration.voice', voice);
+    store('narration.model', model);
+
+    $('go').disabled = true;
+    $('go').textContent = 'Gerando… (pode levar alguns segundos)';
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voice, model }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Erro ${res.status}`);
+      }
+      const blob = await res.blob();
+      if (lastUrl) URL.revokeObjectURL(lastUrl);
+      lastUrl = URL.createObjectURL(blob);
+      const name = ($('filename').value.trim() || 'narracao').replace(/\.mp3$/i, '') + '.mp3';
+      $('player').src = lastUrl;
+      $('download').href = lastUrl;
+      $('download').download = name;
+      $('result').classList.add('show');
+    } catch (err) {
+      $('error').textContent = err.message;
+    } finally {
+      $('go').disabled = false;
+      $('go').textContent = 'Gerar narração';
+    }
+  });
+</script>
+</body>
+</html>
